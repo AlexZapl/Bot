@@ -1,6 +1,4 @@
-bot_token = "1895553984:AAGScuPHiJd7SF3mYG2QB8ZYMhE4GwLq8wY"
-from rich import print
-from rich.console import Console
+bot_token = "Token"
 from speedtest import Speedtest
 
 class test():
@@ -8,9 +6,9 @@ class test():
         console = Console()
         st = Speedtest()
 
-        with console.status("[bold green]Замеряю скорость интернета...") as status:
-            dl_speed = int(st.download() / 8000)
-            up_speed = int(st.upload() / 8000)
+        
+        dl_speed = int(st.download() / 8000)
+        up_speed = int(st.upload() / 8000)
 
         print(f"Скорость закачки: {dl_speed} kb/s \nСкорость выгрузки: {up_speed} kb/s")
 
@@ -24,9 +22,9 @@ class test():
         console = Console()
         st = Speedtest()
 
-        with console.status("[bold green]Замеряю скорость интернета...") as status:
-            dl_speed = int(st.download() / 8000)
-            up_speed = int(st.upload() / 8000)
+
+        dl_speed = int(st.download() / 8000)
+        up_speed = int(st.upload() / 8000)
         textToAudio(f'network speed download {dl_speed} kilobite upload {up_speed} kilobite')
         #textToAudio(f'Скорость закачки: {dl_speed} kilobite Скорость выгрузки: {up_speed} kilobite')
 
