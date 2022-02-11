@@ -1,4 +1,4 @@
-bot_token = "Token"
+bot_token = "1895553984:AAG8IROpLKQrUZJPiFoj_Q_4k-UsC9JT-dI"
 from speedtest import Speedtest
 
 class test():

@@ -5,13 +5,11 @@ import sqlite3
 import SomeRandomAPI as SRA
 from telegram import Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-
+from db import BotDB
+DB = BotDB('C:/Users/alexz/PycharmProjects/Kodland M2Y1/M1Y1/Bot/alice.db')
 from credits import *
-
 from translate import Translator
 
-try:
-    conn = sqlite3.connect('alice.db')
 
 #test.networktts()
 #test.network()
@@ -57,9 +55,12 @@ dispatcher = updater.dispatcher
 
 
 def start(update, context):  # старт
+    chat = update.effective_chat.id
     context.bot.send_message(update.effective_chat.id, list_greeting[
         random.randint(0, len(list_greeting) - 1)] + " Меня зовут " + name + "! Команды /commands")
     print('start ', update.effective_chat.id)
+    if(not DB.user_exists(user_id=chat)):
+        DB.add_user(user_id=chat)
 
 
 def info(update, context):  # инфа
