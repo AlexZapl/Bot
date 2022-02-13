@@ -2,10 +2,10 @@
 import random
 import time
 from datetime import datetime
-
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import SomeRandomAPI as SRA
 from telegram import Bot
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from translate import Translator
 
 from credits import *
@@ -52,6 +52,30 @@ reply_keybord = ['/anikdot', '/story',
 bot = Bot(token=bot_token)
 updater = Updater(token=bot_token, use_context=True)
 dispatcher = updater.dispatcher
+
+keyboard = [
+    [InlineKeyboardButton("Шутка!", callback_data='1'), InlineKeyboardButton("Анекдот", callback_data='2'), InlineKeyboardButton("История", callback_data='3')],
+    [InlineKeyboardButton("Игральная кость", callback_data='4')],
+    [InlineKeyboardButton("Животное", callback_data='5')]]
+
+def button(update, context):
+    query = update.callback_query
+    query.answer()
+
+    if query.data == "1":
+        jokeb(update, context)
+    elif query.data == "2":
+        anikdotb(update, context)
+    elif query.data == "3":
+        storyb(update, context)
+    elif query.data == "4":
+        rollb(update, context)
+    elif query.data == "5":
+        animalb(update, context)
+    else:
+        context.bot.send_message(update.effective_chat.id, "Пока что этого нет!!")
+button_handler = CallbackQueryHandler(button)
+dispatcher.add_handler(button_handler)
 
 
 def loggerprintAZ(current_datetime, update=None, context=None):
@@ -118,20 +142,38 @@ def roll(update, context):  # игральная кость
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'Выпало число {random.randint(1, 6)}!')
     print('roll ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
     write_to_log(update, 'roll' + loggerprintAZ(current_datetime, update, context), context)
+    update.message.reply_text('Ещё интересное!', reply_markup=InlineKeyboardMarkup(keyboard))
 
 
 def anikdot(update, context):  # аникдот
     current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{anikdots[random.randint(0, len(anikdots) - 1)]}')
-    print('anikdot ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
-    write_to_log(update, 'anikdot/' + loggerprintAZ(current_datetime, update, context), context)
-
+    print('anekdot ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'anekdot' + loggerprintAZ(current_datetime, update, context), context)
+    update.message.reply_text('Ещё интересное!', reply_markup=InlineKeyboardMarkup(keyboard))
 
 def story(update, context):  # история
     current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{storys[random.randint(0, len(storys) - 1)]}')
     print('story ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
     write_to_log(update, 'story' + loggerprintAZ(current_datetime, update, context), context)
+    update.message.reply_text('Ещё интересное!', reply_markup=InlineKeyboardMarkup(keyboard))
+
+def rollb(update, context):  # игральная кость
+    current_datetime = datetime.now()
+    bot.send_animation(update.effective_chat.id,
+                       'https://www.gifki.org/data/media/710/igralnaya-kost-animatsionnaya-kartinka-0079.gif', None,
+                       'Text')
+    time.sleep(0.5)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f'Выпало число {random.randint(1, 6)}!', reply_markup=InlineKeyboardMarkup(keyboard))
+
+def anikdotb(update, context):  # аникдот
+    current_datetime = datetime.now()
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f'{anikdots[random.randint(0, len(anikdots) - 1)]}', reply_markup=InlineKeyboardMarkup(keyboard))
+
+def storyb(update, context):  # история
+    current_datetime = datetime.now()
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f'{storys[random.randint(0, len(storys) - 1)]}', reply_markup=InlineKeyboardMarkup(keyboard))
 
 
 def cmd(update, context):  # команды
@@ -139,7 +181,7 @@ def cmd(update, context):  # команды
     context.bot.send_message(chat_id=update.effective_chat.id, text=comands)
     print('commands ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
     write_to_log(update, 'commands' + loggerprintAZ(current_datetime, update, context), context)
-
+    update.message.reply_text('Интересное:', reply_markup=InlineKeyboardMarkup(keyboard))
 
 def animal(update, context):  # текст-вопросы
     current_datetime = datetime.now()
@@ -184,6 +226,41 @@ def animal(update, context):  # текст-вопросы
     if animls == 1:
         context.bot.send_message(chat_id=update.effective_chat.id,
                                  text='Если было мало можешь написать /animal (количество). Например /animal 5')
+    update.message.reply_text('Ещё интересное!', reply_markup=InlineKeyboardMarkup(keyboard))
+
+
+def animalb(update, context):  # текст-вопросы
+    current_datetime = datetime.now()
+
+    animls = 1
+
+
+    for i in range(0, animls):
+        rand = random.randint(1, 7)
+        if rand == 1:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            https2 = str(SRA.Img.cat())
+        elif rand == 2:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            https2 = str(SRA.Img.dog())
+        elif rand == 3:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            https2 = str(SRA.Img.panda())
+        elif rand == 4:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            https2 = str(SRA.Img.red_panda())
+        elif rand == 5:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            https2 = str(SRA.Img.birb())
+        elif rand == 6:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            https2 = str(SRA.Img.fox())
+        elif rand == 7:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            https2 = str(SRA.Img.koala())
+        https3 = https2[10:]
+        https = https3[:-2]
+        bot.send_photo(update.effective_chat.id, https, reply_markup=InlineKeyboardMarkup(keyboard))
 
 
 def joke(update, context):  # команды
@@ -191,7 +268,11 @@ def joke(update, context):  # команды
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{jokes[random.randint(0, len(jokes) - 1)]}')
     print('joke ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
     write_to_log(update, 'joke' + loggerprintAZ(current_datetime, update, context), context)
+    update.message.reply_text('Ещё интересное!', reply_markup=InlineKeyboardMarkup(keyboard))
 
+def jokeb(update, context):  # команды
+    current_datetime = datetime.now()
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f'{jokes[random.randint(0, len(jokes) - 1)]}', reply_markup=InlineKeyboardMarkup(keyboard))
 
 def alarm(context):
     current_datetime = datetime.now()
@@ -245,7 +326,7 @@ info_handler = CommandHandler('info', info)  # инфа
 message_handler = CommandHandler('translate', message)  # текст
 unknown_handler = MessageHandler(Filters.command, unknown)  # нет команды
 roll_handler = CommandHandler('roll', roll)  # кость
-anikdot_handler = CommandHandler('anikdot', anikdot)  # аникдот
+anikdot_handler = CommandHandler('anekdot', anikdot)  # аникдот
 story_handler = CommandHandler('story', story)  # история
 cmd_handler = CommandHandler('commands', cmd)  # команды
 fox_handler = CommandHandler('animal', animal)  # лиса

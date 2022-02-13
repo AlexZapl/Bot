@@ -2,16 +2,15 @@ from telegram import Update, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from datetime import datetime
-import pywhatkit
+
+NICKNAME = 'AlexZapl'
+
 current_datetimef = datetime.now()
-print('Day', current_datetimef.day, '  ', str(current_datetimef.hour)+':'+str(current_datetimef.minute)+':'+str(current_datetimef.second))
-pywhatkit.text_to_handwriting('''Hi how are you?
-Fine! How are yours?
-Mine are great! I made a program that translates from Russian into English, and puts it into a picture drawn in handwriting!
-Here, you see it!
-Wow it`s cool! I will wait for continuation of this program!
-                                                                                
-                                                                                
+print('Day', current_datetimef.day, '  ',
+      str(current_datetimef.hour) + ':' + str(current_datetimef.minute) + ':' + str(current_datetimef.second))
+print('''
+
+
                                                    SS###&&&&&##SS               
                                                 ##&&&&&&&&&&&&&&&&#S                
                   SSS####SSSS                S#&&&&&&&&&&&&&&&&&&&&&#S                
@@ -50,28 +49,32 @@ Wow it`s cool! I will wait for continuation of this program!
                                       S#&&&&&&&&&&&&&#                                
                                           S##&&&&&&#                                
                                               S###S                                
-                                                                                
-                                                                                
-                                                                                ''', "filename.png", (0, 0, 138))
 
+
+                                                                                ''')
 
 current_datetime = datetime.now()
-print('Day', current_datetime.day, '  ', str(current_datetime.hour)+':'+str(current_datetime.minute)+':'+str(current_datetime.second))
+print('Day', current_datetime.day, '  ',
+      str(current_datetime.hour) + ':' + str(current_datetime.minute) + ':' + str(current_datetime.second))
 
 bot_token = '5268805778:AAHjHzJlQL1es8cbXs2CQFVu5aRPKNTc0hY'
 keyboard = [
-        [InlineKeyboardButton("Понедельник", callback_data='1'), InlineKeyboardButton("Вторник", callback_data='2')],
-        [InlineKeyboardButton("Среда", callback_data='3'), InlineKeyboardButton("Четверг", callback_data='4')],
-        [InlineKeyboardButton("Пятница", callback_data='5')]]
+    [InlineKeyboardButton("Понедельник", callback_data='1'), InlineKeyboardButton("Вторник", callback_data='2')],
+    [InlineKeyboardButton("Среда", callback_data='3'), InlineKeyboardButton("Четверг", callback_data='4')],
+    [InlineKeyboardButton("Пятница", callback_data='5')]]
 bot = Bot(token=bot_token)
 updater = Updater(token=bot_token, use_context=True)
 dispatcher = updater.dispatcher
 
+
 def start(update, context):
     context.bot.send_message(update.effective_chat.id, "Это бот для расписания! Ничего не забывай! Доска: /showwall")
 
+
 def help(update, context):
-    context.bot.send_message(update.effective_chat.id, "Лишь попроси бота, и он поможет тебе с расписанием и некоторыми предметами!")
+    context.bot.send_message(update.effective_chat.id,
+                             "Лишь попроси бота, и он поможет тебе с расписанием и некоторыми предметами!")
+
 
 def get_data_from_file(day):
     f = open(day, "r", encoding='UTF-8')
@@ -79,14 +82,17 @@ def get_data_from_file(day):
     f.close()
     return data
 
+
 def get_data_from_file_n(day):
     f = open(day, "r")
     data = f.read()
     f.close()
     return data
 
+
 def get_day(update, context):
     update.message.reply_text('Выбери день недели', reply_markup=InlineKeyboardMarkup(keyboard))
+
 
 def button(update, context):
     query = update.callback_query
@@ -105,16 +111,35 @@ def button(update, context):
     else:
         context.bot.send_message(update.effective_chat.id, "Нет такого дня пока что!")
 
+
 def write_to_wall(update, context):
-    wall = open('wall.txt', 'a')
-    result = ''
-    for arg in context.args:
-        result += arg + ' '
-    wall.write(str(update.message.from_user['username']) + ": " + result + '\n')
-    wall.close()
+    if str(update.message.from_user['username']) == NICKNAME:
+        wall = open('wall.txt', 'a')
+        result = ''
+        for arg in context.args:
+            result += arg + ' '
+        wall.write(str(update.message.from_user['username']) + ": " + result + '\n')
+        wall.close()
+    else:
+        context.bot.send_message(update.effective_chat.id,
+                                 f"Ты не {NICKNAME}!")
+
 
 def show_wall(update, context):
-    context.bot.send_message(update.effective_chat.id, get_data_from_file_n("wall.txt"))
+    if str(update.message.from_user['username']) == NICKNAME:
+        context.bot.send_message(update.effective_chat.id, get_data_from_file_n("wall.txt"))
+    else:
+        context.bot.send_message(update.effective_chat.id,
+                                 f"Ты не {NICKNAME}!")
+
+
+def show_log(update, context):
+    if str(update.message.from_user['username']) == NICKNAME:
+        context.bot.send_message(update.effective_chat.id, get_data_from_file_n("log.txt"))
+    else:
+        context.bot.send_message(update.effective_chat.id,
+                                 f"Ты не {NICKNAME}!")
+
 
 write_to_wall_handler = CommandHandler('writewall', write_to_wall)
 show_wall_handler = CommandHandler('showwall', show_wall)
@@ -122,7 +147,8 @@ show_wall_handler = CommandHandler('showwall', show_wall)
 dispatcher.add_handler(write_to_wall_handler)
 dispatcher.add_handler(show_wall_handler)
 
-
+log_handler = CommandHandler('logs', show_log)
+dispatcher.add_handler(log_handler)
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
@@ -134,7 +160,7 @@ get_day_handler = CommandHandler('getday', get_day)
 dispatcher.add_handler(get_day_handler)
 
 button_handler = CallbackQueryHandler(button)
-#dispatcher.add_handler(button_handler)
+# dispatcher.add_handler(button_handler)
 
 updater.start_polling()
 updater.idle()
