@@ -1,18 +1,17 @@
 # -*- coding: cp1251 -*-
 import random
 import time
-import sqlite3
+from datetime import datetime
+
 import SomeRandomAPI as SRA
 from telegram import Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from db import BotDB
-DB = BotDB('C:/Users/alexz/PycharmProjects/Kodland M2Y1/M1Y1/Bot/alice.db')
-from credits import *
 from translate import Translator
 
+from credits import *
 
-#test.networktts()
-#test.network()
+# test.networktts()
+# test.network()
 name = "Алиса"
 list_greeting = ['Hi, ', "Привет, ", "Ку, ", "Привет друг, ", "Привет, как дела? ", "Привет, Хозяин! "]
 anikdots = [
@@ -39,108 +38,124 @@ storys = [
     '''Отрицательной чертой, приписываемой туристам, был вандализм. Сведения о разграблении памятников туристами неоднократно отмечались современниками. Известный адвокат А.Ф.Кони, описывая Дворец правосудия в Париже, вспоминал:\n"В этой комнате устроена в настоящее время скромная часовня, стены которой пришлось выкрасить темной масляной краской, во избежание тех надписей, которыми туристы хотят связать свои ничтожные имена с местами, где разыгрывались исторические события. Пришлось унести из этой комнаты и кресло королевы, чтобы спасти его остатки от тех же туристов, бессмысленно вырезавших из него кусочки себе на память".''',
     '''Было вчера.\nСижу дома, никого не трогаю, починяю примус.\nЗаваливает младшенький , и с порога старшему: "А ты не знаешь, кто Марка убил"?\nЯ знаю, что у старшего был одноклассник Марк, думаю, что вообще гопота местная берега попутала.\nМаму этого Марка знаю, речь уже скорбную сложил, чтобы позвонить ей, посочувствовать.\nСука, как меня только дёрнуло подробности спросить...\nОт жеж жопа была бы. Оказалось, что тот сраный Марк - это персонаж онлайн игры.\nНу как так-то, а?''']
 comands = '/start /info /roll /anikdot /story /animal /joke /translate /set_timer /count /commands'
-jokes = ['О ПАССАЖИРАХ С НИЗКИМ РЕЙТИНГОМ\nЦитата: «Идея неплохая. К людям с хорошим рейтингом приезжают водители с хорошим рейтингом. Согласитесь, в эту сторону идея работает. Она абсолютно не работает в обратную сторону. Получается, к людям с плохим рейтингом приезжают водители с плохим рейтингом. То есть прямо сейчас где-то по Санкт-Петербургу ублюдок едет за ублюдком. Они оба очень злые, потому что у них в телефонах написано, что они ублюдки. И „Яндекс“ думает, что из этого получится что-то хорошее».',
-         'О СПАЛЬНЫХ РАЙОНАХ И ГОТИКЕ\nЦитата: «Кто живёт в некрасивых домах? Похлопайте, пожалуйста. Просто я недавно задумался, что если положить фотографии всех мест, где я провёл большую часть своей жизни… Фотографию моего дома, фотографию школы, института. Если вот так в ряд положить, это очень похоже на тот момент в фильме, знаете, когда детектив понимает, почему герой стал серийным убийцей: „А, оказывается, у тебя не было выбора! Ты должен был стать серийным убийцей, больше никем ты не мог стать!“\nМне нравится готика, готические соборы. И я недавно узнал одно из главных правил построения готики: рядом с готическим собором ты должен чувствовать себя ничтожеством. Потому что готический собор настолько возвышенный и прекрасный. И я подумал, что с моим домом это тоже работает. Я тоже чувствую себя ничтожеством, но только потому, что это мой дом».',
-         'О ПРОФЕССИИ ПРОТАПТЫВАТЕЛЯ ДОРОЖЕК\nЦитата: «Я нашла в интернете вакансию „протаптыватель тропинок“. Для благоустройства экопарка требуется персонал для создания тропинок естественного происхождения. Абсолютная правда. Зарплата от 35 до 50 тысяч рублей, обучение бесплатное, на месте. Думаю, самое короткое обучение. Просто идите! Вряд ли там говорят „забудьте всё, чему вас учили в школе, институте“. \nНо главное, вакансия не просто есть, она „освободилась“! Интересно, что случилось с предыдущим сотрудником? Думаю, вряд ли он ушёл сам. Стоптал ноги до колена или протоптал тропинку не туда? Я сразу представила его разговор с начальником. Он сидит, и начальник ему говорит: „Мне кажется, вы топчетесь на одном месте. Я вас увольняю, уходите“. А он такой: „Я не пойду, я не на работе!“».',
-         'ОБ АРХИТЕКТУРЕ ТЕЛЬ-АВИВА\nЦитата: «Когда играешь в компьютерную игру и у тебя комп слабый, ты ставишь настройки графики на минимум. И все здания — чисто геометрические фигуры без каких-либо текстур, теней, освещения.\nИ точно так же, когда ты находишься в Израиле. Смотришь по сторонам — и такой: „Где детали?“. Я не могу. Я жил всю жизнь в архитектуре европейской. Добавьте деталей! Хочется выйти на улицу и крикнуть: „Где гаргульи? Поставьте гаргулий уже, в конце-то концов! Где узоры? Можете сделать узоры? Это сталинка? Это не сталинка! Мы в центре, должны быть сталинки!“».',
-         'О КУЛЬТУРНОМ ДОСУГЕ И «МАКДОНАЛДСЕ»\nЦитата: «Знаете этот момент, когда к вам приезжает друг из другого города и просит показать ему город? И вы показываете ему места, в которых сами не были никогда. Типа: Москва — это Третьяковка. И вы идёте в Третьяковку, и ты не можешь найти вход, потому что там несколько зданий.\nМосквичам вообще плевать на места. Ну, они не в курсе ничего. У меня подруга живёт в Тюмени, она знает больше про Москву. Она как-то прилетела, мы встретились, и она говорит: „Куда пойдём?“ Я задумался, а она такая: „Сейчас в Москве Дни японской культуры, можно туда. А потом — вечеринка-сет разных диджеев из разных стран. Можно туда“. И я такой: „А потом — в "Макдоналдс"!».',
-         'О БЕЛЬЕ В ПОЕЗДАХ И О ПРОВОДНИЦАХ\nЦитата: «Вы вообще знали, что мы не обязаны сдавать бельё проводницам? Похлопайте, кто знал! А чё вы не рассказали остальным? Мы живём в страхе. Я вообще не понимаю, каким образом это работает, потому что они приходят такие: „Сдаём бельё, через семь часов приезжаем“. Ну, там же пространственно-временной континуум тоже у них сломался почему-то. И ты такой: „Да, госпожа, пожалуйста, заберите, не трогайте меня“.\nЯ, значит, сел на эту тахту расстеленную, сижу и думаю: „Сейчас ты получишь у меня, конечно! Давай, заходи, я информацию знаю“. Вооружён, как говорится. Она заходит и говорит: „Молодой человек, бельё сдаём“. Я говорю: „Тебе надо, ты и забирай!“\nВы бы видели! У неё башка закрутилась, как у демона, типа: „А-а-а-а! Откуда ты знаешь?“ Она поползла по потолку, клянусь, к своим подругам: „Нам надо убить его, он всем расскажет!“».',]
-reply_keybord=['/anikdot', '/story',
-               '/animal']
-#markup = ReplyKeyboardMarkup(reply_keybord, one_time_keyboard=False)
+jokes = [
+    'О ПАССАЖИРАХ С НИЗКИМ РЕЙТИНГОМ\nЦитата: «Идея неплохая. К людям с хорошим рейтингом приезжают водители с хорошим рейтингом. Согласитесь, в эту сторону идея работает. Она абсолютно не работает в обратную сторону. Получается, к людям с плохим рейтингом приезжают водители с плохим рейтингом. То есть прямо сейчас где-то по Санкт-Петербургу ублюдок едет за ублюдком. Они оба очень злые, потому что у них в телефонах написано, что они ублюдки. И „Яндекс“ думает, что из этого получится что-то хорошее».',
+    'О СПАЛЬНЫХ РАЙОНАХ И ГОТИКЕ\nЦитата: «Кто живёт в некрасивых домах? Похлопайте, пожалуйста. Просто я недавно задумался, что если положить фотографии всех мест, где я провёл большую часть своей жизни… Фотографию моего дома, фотографию школы, института. Если вот так в ряд положить, это очень похоже на тот момент в фильме, знаете, когда детектив понимает, почему герой стал серийным убийцей: „А, оказывается, у тебя не было выбора! Ты должен был стать серийным убийцей, больше никем ты не мог стать!“\nМне нравится готика, готические соборы. И я недавно узнал одно из главных правил построения готики: рядом с готическим собором ты должен чувствовать себя ничтожеством. Потому что готический собор настолько возвышенный и прекрасный. И я подумал, что с моим домом это тоже работает. Я тоже чувствую себя ничтожеством, но только потому, что это мой дом».',
+    'О ПРОФЕССИИ ПРОТАПТЫВАТЕЛЯ ДОРОЖЕК\nЦитата: «Я нашла в интернете вакансию „протаптыватель тропинок“. Для благоустройства экопарка требуется персонал для создания тропинок естественного происхождения. Абсолютная правда. Зарплата от 35 до 50 тысяч рублей, обучение бесплатное, на месте. Думаю, самое короткое обучение. Просто идите! Вряд ли там говорят „забудьте всё, чему вас учили в школе, институте“. \nНо главное, вакансия не просто есть, она „освободилась“! Интересно, что случилось с предыдущим сотрудником? Думаю, вряд ли он ушёл сам. Стоптал ноги до колена или протоптал тропинку не туда? Я сразу представила его разговор с начальником. Он сидит, и начальник ему говорит: „Мне кажется, вы топчетесь на одном месте. Я вас увольняю, уходите“. А он такой: „Я не пойду, я не на работе!“».',
+    'ОБ АРХИТЕКТУРЕ ТЕЛЬ-АВИВА\nЦитата: «Когда играешь в компьютерную игру и у тебя комп слабый, ты ставишь настройки графики на минимум. И все здания — чисто геометрические фигуры без каких-либо текстур, теней, освещения.\nИ точно так же, когда ты находишься в Израиле. Смотришь по сторонам — и такой: „Где детали?“. Я не могу. Я жил всю жизнь в архитектуре европейской. Добавьте деталей! Хочется выйти на улицу и крикнуть: „Где гаргульи? Поставьте гаргулий уже, в конце-то концов! Где узоры? Можете сделать узоры? Это сталинка? Это не сталинка! Мы в центре, должны быть сталинки!“».',
+    'О КУЛЬТУРНОМ ДОСУГЕ И «МАКДОНАЛДСЕ»\nЦитата: «Знаете этот момент, когда к вам приезжает друг из другого города и просит показать ему город? И вы показываете ему места, в которых сами не были никогда. Типа: Москва — это Третьяковка. И вы идёте в Третьяковку, и ты не можешь найти вход, потому что там несколько зданий.\nМосквичам вообще плевать на места. Ну, они не в курсе ничего. У меня подруга живёт в Тюмени, она знает больше про Москву. Она как-то прилетела, мы встретились, и она говорит: „Куда пойдём?“ Я задумался, а она такая: „Сейчас в Москве Дни японской культуры, можно туда. А потом — вечеринка-сет разных диджеев из разных стран. Можно туда“. И я такой: „А потом — в "Макдоналдс"!».',
+    'О БЕЛЬЕ В ПОЕЗДАХ И О ПРОВОДНИЦАХ\nЦитата: «Вы вообще знали, что мы не обязаны сдавать бельё проводницам? Похлопайте, кто знал! А чё вы не рассказали остальным? Мы живём в страхе. Я вообще не понимаю, каким образом это работает, потому что они приходят такие: „Сдаём бельё, через семь часов приезжаем“. Ну, там же пространственно-временной континуум тоже у них сломался почему-то. И ты такой: „Да, госпожа, пожалуйста, заберите, не трогайте меня“.\nЯ, значит, сел на эту тахту расстеленную, сижу и думаю: „Сейчас ты получишь у меня, конечно! Давай, заходи, я информацию знаю“. Вооружён, как говорится. Она заходит и говорит: „Молодой человек, бельё сдаём“. Я говорю: „Тебе надо, ты и забирай!“\nВы бы видели! У неё башка закрутилась, как у демона, типа: „А-а-а-а! Откуда ты знаешь?“ Она поползла по потолку, клянусь, к своим подругам: „Нам надо убить его, он всем расскажет!“».', ]
+reply_keybord = ['/anikdot', '/story',
+                 '/animal']
+# markup = ReplyKeyboardMarkup(reply_keybord, one_time_keyboard=False)
 
 bot = Bot(token=bot_token)
 updater = Updater(token=bot_token, use_context=True)
 dispatcher = updater.dispatcher
 
 
+def loggerprintAZ(current_datetime, update=None, context=None):
+    if update == None:
+        get = f'Day {current_datetime.day}', str(current_datetime.hour) + ':' + str(
+            current_datetime.minute) + ':' + str(current_datetime.second)
+    else:
+        get = str(update.message.from_user['username']), f'Day {current_datetime.day}', str(
+            current_datetime.hour) + ':' + str(current_datetime.minute) + ':' + str(current_datetime.second)
+    return str(get)
+
+
+def write_to_log(update, log, context=None):
+    wall = open('log.txt', 'a')
+    # for arg in context.args:
+    #    result += arg + ' '
+    wall.write(str(update.message.from_user['username']) + ": " + log + '\n')
+    wall.close()
+
+
 def start(update, context):  # старт
+    current_datetime = datetime.now()
     chat = update.effective_chat.id
     context.bot.send_message(update.effective_chat.id, list_greeting[
         random.randint(0, len(list_greeting) - 1)] + " Меня зовут " + name + "! Команды /commands")
-    print('start ', update.effective_chat.id)
-    if(not DB.user_exists(user_id=chat)):
-        DB.add_user(user_id=chat)
+    print('start ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'start' + loggerprintAZ(current_datetime, update, context), context)
 
 
 def info(update, context):  # инфа
+    current_datetime = datetime.now()
     context.bot.send_message(update.effective_chat.id, f"Меня зовут {name}! Меня создал AlexZapl!")
-    print('info ', update.effective_chat.id)
+    print('info ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'info' + loggerprintAZ(current_datetime, update, context), context)
 
 
 def message(update, context):  # ответ
+    current_datetime = datetime.now()
     en = Translator(from_lang='ru', to_lang="en")
     ru = Translator(to_lang="ru")
-    note = context.args[1]
+    note = ''
+    for arg in context.args:
+        note += arg + ' '
     if note == '' or note == None:
         context.bot.send_message(update.effective_chat.id, 'Нельзя переводить ничего!')
         return
-    print(note)
+    print('\n\n', note)
     en_trans = en.translate(note)
     ru_trans = ru.translate(note)
-    #print(f'Перевод на английский: {en_trans}, На русский: {ru_trans}')
+    # print(f'Перевод на английский: {en_trans}, На русский: {ru_trans}')
     print(f'Перевод на английский: {en_trans}')
-    #context.bot.send_message(update.effective_chat.id, f'Перевод на английский: {en_trans}, На русский: {ru_trans}')
+    # context.bot.send_message(update.effective_chat.id, f'Перевод на английский: {en_trans}, На русский: {ru_trans}')
     context.bot.send_message(update.effective_chat.id, f'Перевод на английский: {en_trans}')
-    print('msg ', update.effective_chat.id)
+    print('translate ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context), '\n')
+    write_to_log(update, 'translate' + loggerprintAZ(current_datetime, update, context) + f'Text: {note}', context)
 
 
 def roll(update, context):  # игральная кость
+    current_datetime = datetime.now()
     bot.send_animation(update.effective_chat.id,
                        'https://www.gifki.org/data/media/710/igralnaya-kost-animatsionnaya-kartinka-0079.gif', None,
                        'Text')
     time.sleep(0.5)
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'Выпало число {random.randint(1, 6)}!')
-    print('roll ', update.effective_chat.id)
+    print('roll ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'roll' + loggerprintAZ(current_datetime, update, context), context)
 
 
 def anikdot(update, context):  # аникдот
+    current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{anikdots[random.randint(0, len(anikdots) - 1)]}')
-    print('anikdot ', update.effective_chat.id)
+    print('anikdot ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'anikdot/' + loggerprintAZ(current_datetime, update, context), context)
 
 
 def story(update, context):  # история
+    current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{storys[random.randint(0, len(storys) - 1)]}')
-    print('story ', update.effective_chat.id)
+    print('story ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'story' + loggerprintAZ(current_datetime, update, context), context)
 
 
 def cmd(update, context):  # команды
+    current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=comands)
-    print('commands ', update.effective_chat.id)
+    print('commands ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'commands' + loggerprintAZ(current_datetime, update, context), context)
 
 
 def animal(update, context):  # текст-вопросы
-    rand = random.randint(1, 7)
-    if rand == 1:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
-        https2 = str(SRA.Img.cat())
-    elif rand == 2:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
-        https2 = str(SRA.Img.dog())
-    elif rand == 3:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
-        https2 = str(SRA.Img.panda())
-    elif rand == 4:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
-        https2 = str(SRA.Img.red_panda())
-    elif rand == 5:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
-        https2 = str(SRA.Img.birb())
-    elif rand == 6:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
-        https2 = str(SRA.Img.fox())
-    elif rand == 7:
-        context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
-        https2 = str(SRA.Img.koala())
-    https3 = https2[10:]
-    https = https3[:-2]
-    print('animal ', update.effective_chat.id)
-    bot.send_photo(update.effective_chat.id, https)#, reply_markup=markup)
+    current_datetime = datetime.now()
 
+    animls = ''
+    for arg in context.args:
+        animls += arg + ' '
+        break
+    if animls == '':
+        animls = 1
+    else:
+        animls = int(animls)
 
-def animal10(update, context):
-    print('animal ', update.effective_chat.id)
-    for i in range(0,100):
+    print(f'animals {animls}', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, f'animals {animls}' + loggerprintAZ(current_datetime, update, context), context)
+    for i in range(0, animls):
         rand = random.randint(1, 7)
         if rand == 1:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
@@ -166,45 +181,63 @@ def animal10(update, context):
         https3 = https2[10:]
         https = https3[:-2]
         bot.send_photo(update.effective_chat.id, https)
+    if animls == 1:
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text='Если было мало можешь написать /animal (количество). Например /animal 5')
 
 
 def joke(update, context):  # команды
+    current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{jokes[random.randint(0, len(jokes) - 1)]}')
-    print('joke ', update.effective_chat.id)
+    print('joke ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'joke' + loggerprintAZ(current_datetime, update, context), context)
 
 
 def alarm(context):
+    current_datetime = datetime.now()
     job = context.job
     context.bot.send_message(job.context, 'ДЗЗЗЫНЬ! Время прошло!')
 
 
 def set_timer(update, context):
-    due = int(context.args[0])
+    current_datetime = datetime.now()
+    due = ''
+    for arg in context.args:
+        due += arg + ' '
+        break
     if due == '' or due == None:
-        context.bot.send_message(update.effective_chat.id, 'Нельзя ставить пустой таймер таймер!')
+        context.bot.send_message(update.effective_chat.id, 'Нельзя ставить пустой таймер!')
         return
+    due = int(due)
     if due < 0:
         context.bot.send_message(update.effective_chat.id, 'Нельзя ставить таймер меньше 0 секунд!')
         return
     context.job_queue.run_once(alarm, due, context=update.effective_chat.id, name=str(update.effective_chat.id))
-    context.bot.send_message(update.effective_chat.id, 'Таймер установлен')
+    context.bot.send_message(update.effective_chat.id, f'Таймер установлен на {due} секунд')
+    print(f'timer {due}', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, f'timer {due}' + loggerprintAZ(current_datetime, update, context), context)
 
 
 def counter(update, context):
-    text = str(context.args[0])
-    text2 = text.split()
+    current_datetime = datetime.now()
+    text = str(context.args)
+    text2 = text.split(" ")
     lenned = len(text2)
-    print(text, '\n', text2, '\n', lenned, 'words')
+    print(f'\n\n {text} \n {text2}')
+    print(lenned, 'words         ', loggerprintAZ(current_datetime, update, context), '\n')
     context.bot.send_message(chat_id=update.effective_chat.id, text=f"Тут {lenned} слова!")
+    write_to_log(update, f'len' + loggerprintAZ(current_datetime, update, context) + f'Text: {text}', context)
 
 
-#def close(update, context):
-    #context.bot.send_message(chat_id=update.effective_chat.id, text=f'Закрыто!', reply_markup=ReplyKeyboardRemove())
+# def close(update, context):
+# context.bot.send_message(chat_id=update.effective_chat.id, text=f'Закрыто!', reply_markup=ReplyKeyboardRemove())
 
 
 def unknown(update, context):  # нет команды
+    current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text="Я не знаю этой команды!")
-    print('UNKNOWN ', update.effective_chat.id)
+    print('UNKNOWN ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    write_to_log(update, 'UNKNOWN' + loggerprintAZ(current_datetime, update, context), context)
 
 
 start_handler = CommandHandler('start', start)  # старт
@@ -216,25 +249,23 @@ anikdot_handler = CommandHandler('anikdot', anikdot)  # аникдот
 story_handler = CommandHandler('story', story)  # история
 cmd_handler = CommandHandler('commands', cmd)  # команды
 fox_handler = CommandHandler('animal', animal)  # лиса
-fox2_handler = CommandHandler('animal10', animal10)  # лиса
 joke_handler = CommandHandler('joke', joke)  # шутка
-#close_handler = CommandHandler('close', close)  # close
-set_handler = CommandHandler("set_timer", set_timer) # таймер
-count_handler = CommandHandler('count', counter) # счетчик слов
-dispatcher.add_handler(count_handler) # счетчик слов
-dispatcher.add_handler(set_handler) # таймер
+# close_handler = CommandHandler('close', close)  # close
+set_handler = CommandHandler("set_timer", set_timer)  # таймер
+count_handler = CommandHandler('count', counter)  # счетчик слов
+dispatcher.add_handler(count_handler)  # счетчик слов
+dispatcher.add_handler(set_handler)  # таймер
 dispatcher.add_handler(start_handler)  # старт
 dispatcher.add_handler(info_handler)  # инфа
-dispatcher.add_handler(message_handler)#текст
+dispatcher.add_handler(message_handler)  # текст
 dispatcher.add_handler(roll_handler)  # кость
 dispatcher.add_handler(anikdot_handler)  # аникдот
 dispatcher.add_handler(story_handler)  # история
 dispatcher.add_handler(cmd_handler)  # команды
 dispatcher.add_handler(fox_handler)  # текст-вопросы
-dispatcher.add_handler(fox2_handler)  # текст-вопросы
 dispatcher.add_handler(joke_handler)  # шутка
 
-#dispatcher.add_handler(close_handler)  # текст-вопросы
+# dispatcher.add_handler(close_handler)  # текст-вопросы
 
 
 dispatcher.add_handler(unknown_handler)  # нет команды

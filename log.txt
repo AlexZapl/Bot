@@ -1,0 +1,2 @@
+AlexZapl: start('AlexZapl', 'Day', 13, '  ', '14:6:50')
+О, работает!
