@@ -1,0 +1,10 @@
+AlexZapl: Text('AlexZapl', 'Day 15', '21:31:21')Text: /start@Hammer_AZ_bot
+AlexZapl: Text('AlexZapl', 'Day 15', '21:31:38')Text: /start@Hammer_AZ_bot
+AlexZapl: Text('AlexZapl', 'Day 15', '21:31:43')Text: /roll@Hammer_AZ_bot
+AlexZapl: Text('AlexZapl', 'Day 15', '21:33:10')Text: /start@Hammer_AZ_bot
+AlexZapl: Text('AlexZapl', 'Day 15', '21:33:18')Text: /start
+AlexZapl: Text('AlexZapl', 'Day 15', '21:34:40')Text: /start@Hammer_AZ_bot
+AlexZapl: Text('AlexZapl', 'Day 15', '21:35:16')Text: /anekdot
+AlexZapl: Text('AlexZapl', 'Day 15', '21:36:33')Text: /anekdot
+AlexZapl: Text('AlexZapl', 'Day 15', '21:36:44')Text: /anekdot
+AlexZapl: Text('AlexZapl', 'Day 15', '21:37:2')Text: /start
