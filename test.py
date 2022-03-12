@@ -1,16 +1,18 @@
 from telegram import Update, Bot
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackContext
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from datetime import datetime
 
 NICKNAME = 'AlexZapl'
+bot_token = '5268805778:AAHjHzJlQL1es8cbXs2CQFVu5aRPKNTc0hY'
+bot = Bot(token=bot_token)
+updater = Updater(token=bot_token)
+dispatcher = updater.dispatcher
 
 current_datetimef = datetime.now()
 print('Day', current_datetimef.day, '  ',
       str(current_datetimef.hour) + ':' + str(current_datetimef.minute) + ':' + str(current_datetimef.second))
 print('''
-
-
                                                    SS###&&&&&##SS               
                                                 ##&&&&&&&&&&&&&&&&#S                
                   SSS####SSSS                S#&&&&&&&&&&&&&&&&&&&&&#S                
@@ -48,119 +50,97 @@ print('''
                                   SS#&&S&&#&&&&&&&&&&&&S                                
                                       S#&&&&&&&&&&&&&#                                
                                           S##&&&&&&#                                
-                                              S###S                                
-
-
-                                                                                ''')
+                                              S###S                                ''')
 
 current_datetime = datetime.now()
 print('Day', current_datetime.day, '  ',
       str(current_datetime.hour) + ':' + str(current_datetime.minute) + ':' + str(current_datetime.second))
-
-bot_token = '5268805778:AAHjHzJlQL1es8cbXs2CQFVu5aRPKNTc0hY'
-keyboard = [
-    [InlineKeyboardButton("Понедельник", callback_data='1'), InlineKeyboardButton("Вторник", callback_data='2')],
-    [InlineKeyboardButton("Среда", callback_data='3'), InlineKeyboardButton("Четверг", callback_data='4')],
-    [InlineKeyboardButton("Пятница", callback_data='5')]]
-bot = Bot(token=bot_token)
-updater = Updater(token=bot_token, use_context=True)
-dispatcher = updater.dispatcher
-
+GENDER = 0
+PHOTO = 1
+BIO = 2
+VIDEO = 3
 
 def start(update, context):
-    context.bot.send_message(update.effective_chat.id, "Это бот для расписания! Ничего не забывай! Доска: /showwall")
+    reply_keyboard = [['Мужчина', 'Женщина']]
+    update.message.reply_text('Добрый день! Вас приветствует Компания PineApple! Укажите свой пол, вы мужчина или женщина?', reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    return GENDER
 
 
-def help(update, context):
-    context.bot.send_message(update.effective_chat.id,
-                             "Лишь попроси бота, и он поможет тебе с расписанием и некоторыми предметами!")
+def gender(update, context):
+    update.message.reply_text('Отлично! Теперь отправьте нам свою фотографию, мы заведем личную карточку, или отправьте /skip если хотите пропустить этот шаг')
+
+    return PHOTO
 
 
-def get_data_from_file(day):
-    f = open(day, "r", encoding='UTF-8')
-    data = f.read()
-    f.close()
-    return data
+def photo(update, context):
+    user = str(update.message.from_user['username'])
+    photo_file = update.message.document.get_file()
+    photo_file.download(user + '_photo.jpg')
+    update.message.reply_text(
+        'Отлично! Вы сегодня прекрасно выглядите! Теперь отправьте краткое сообщение о себе, или отправьте /skip если хотите пропустить этот шаг')
+
+    return BIO
 
 
-def get_data_from_file_n(day):
-    f = open(day, "r")
-    data = f.read()
-    f.close()
-    return data
+def skip_photo(update, context):
+    update.message.reply_text('Значит без фото! Окей, отправьте краткое сообщение о себе или отправьте /skip.')
+
+    return BIO
 
 
-def get_day(update, context):
-    update.message.reply_text('Выбери день недели', reply_markup=InlineKeyboardMarkup(keyboard))
+def bio (update, context):
+    #Будет принимать краткое текстовое резюме
+    user = str(update.message.from_user['username'])
+    bio_file = update.message.text
+    update.message.reply_text(
+        'Отлично! Теперь отправьте краткое видеосообщение о себе, или отправьте /skip если хотите пропустить этот шаг')
+
+    return VIDEO
 
 
-def button(update, context):
-    query = update.callback_query
-    query.answer()
+def skip_bio(update, context):
+    update.message.reply_text('Значит без БИО! Окей, отправьте краткое видеосообщение о себе или отправьте /skip.')
 
-    if query.data == "1":
-        context.bot.send_message(update.effective_chat.id, get_data_from_file("mon.txt"))
-    elif query.data == "2":
-        context.bot.send_message(update.effective_chat.id, get_data_from_file("tue.txt"))
-    elif query.data == "3":
-        context.bot.send_message(update.effective_chat.id, get_data_from_file("wed.txt"))
-    elif query.data == "4":
-        context.bot.send_message(update.effective_chat.id, get_data_from_file("thu.txt"))
-    elif query.data == "5":
-        context.bot.send_message(update.effective_chat.id, get_data_from_file("fri.txt"))
-    else:
-        context.bot.send_message(update.effective_chat.id, "Нет такого дня пока что!")
+    return VIDEO
 
 
-def write_to_wall(update, context):
-    if str(update.message.from_user['username']) == NICKNAME:
-        wall = open('wall.txt', 'a')
-        result = ''
-        for arg in context.args:
-            result += arg + ' '
-        wall.write(str(update.message.from_user['username']) + ": " + result + '\n')
-        wall.close()
-    else:
-        context.bot.send_message(update.effective_chat.id,
-                                 f"Ты не {NICKNAME}!")
+def video (update, context):
+    #Будет принимать видеорезюме
+    user = str(update.message.from_user['username'])
+    photo_file = update.message.document.get_file()
+    photo_file.download(user + '_video.mp4')
+    update.message.reply_text(
+        'Отлично! Мы с вами свяжемся!')
 
 
-def show_wall(update, context):
-    if str(update.message.from_user['username']) == NICKNAME:
-        context.bot.send_message(update.effective_chat.id, get_data_from_file_n("wall.txt"))
-    else:
-        context.bot.send_message(update.effective_chat.id,
-                                 f"Ты не {NICKNAME}!")
+def skip_video(update, context):
+    update.message.reply_text('Значит без видео! Окей, мы свами свяжемся')
 
 
-def show_log(update, context):
-    if str(update.message.from_user['username']) == NICKNAME:
-        context.bot.send_message(update.effective_chat.id, get_data_from_file_n("log.txt"))
-    else:
-        context.bot.send_message(update.effective_chat.id,
-                                 f"Ты не {NICKNAME}!")
-
-
-write_to_wall_handler = CommandHandler('writewall', write_to_wall)
-show_wall_handler = CommandHandler('showwall', show_wall)
-
-dispatcher.add_handler(write_to_wall_handler)
-dispatcher.add_handler(show_wall_handler)
-
-log_handler = CommandHandler('logs', show_log)
-dispatcher.add_handler(log_handler)
+def cancel(update, context):
+    update.message.reply_text('Надеюсь вы еще нам напишите - возможно мы нуждаемся именно в вас!')
+    return ConversationHandler.END
 
 start_handler = CommandHandler('start', start)
-dispatcher.add_handler(start_handler)
+gender_handler = MessageHandler(Filters.regex('^(Мужчина|Женщина)$'), gender)
+photo_handler = MessageHandler(Filters.document.category("image"), photo)
+skip_photo_handler = CommandHandler('skip', skip_photo)
+bio_handler = MessageHandler(Filters.text, bio)
+skip_bio_handler = CommandHandler('skip', skip_bio)
+video_handler = MessageHandler(Filters.document.category("image"), photo)
+skip_video_handler = CommandHandler('skip', skip_video)
+cancel_handler = CommandHandler('cancel', cancel)
 
-help_handler = CommandHandler('help', help)
-dispatcher.add_handler(help_handler)
+conv_handler = ConversationHandler(
+    entry_points=[start_handler],
+    states={
+        GENDER: [gender_handler],
+        PHOTO: [photo_handler, skip_photo_handler],
+        BIO: [bio_handler, skip_bio_handler],
+        VIDEO: [video_handler, skip_video_handler],
+    }, fallbacks=[cancel_handler])
 
-get_day_handler = CommandHandler('getday', get_day)
-dispatcher.add_handler(get_day_handler)
-
-button_handler = CallbackQueryHandler(button)
-# dispatcher.add_handler(button_handler)
+dispatcher.add_handler(conv_handler)
 
 updater.start_polling()
 updater.idle()

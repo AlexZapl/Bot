@@ -4,6 +4,9 @@ import time
 from datetime import datetime
 
 import SomeRandomAPI as SRA
+import wikipedia
+
+wikipedia.set_lang("ru")
 from PIL import Image, ImageFont, ImageDraw
 from telegram import Bot
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -19,16 +22,21 @@ keyboard = [
      InlineKeyboardButton("История", callback_data='3')],
     [InlineKeyboardButton("Игральная кость", callback_data='4')],
     [InlineKeyboardButton("Животное", callback_data='5')],
-    [InlineKeyboardButton("Создать мем!", callback_data='6')]]
+    [InlineKeyboardButton("Создать мем!", callback_data='6')],
+    [InlineKeyboardButton("Оцени бота!", callback_data='RW_GET')]]
 keyboard2 = [
     [InlineKeyboardButton("Старт!", callback_data='1_1'), InlineKeyboardButton("Инфа.", callback_data='2_1')],
-    [InlineKeyboardButton("Команды", callback_data='3_1')]]
+    [InlineKeyboardButton("Команды", callback_data='3_1')],
+    [InlineKeyboardButton("Оцени бота!", callback_data='RW_GET')]]
+rwkb = [
+    [InlineKeyboardButton("Да!", callback_data='RW_Y')],
+    [InlineKeyboardButton("Нет!", callback_data='RW_N')]]
 name = "Алиса"
 list_greeting = ['Hi, ', "Привет, ", "Ку, ", "Привет друг, ", "Привет, как дела? ", "Привет, Хозяин! "]
 
 
-def loggerprintAZ(current_datetime, update=None, context=None):
-    if update == None:
+def loggerprintAZ(current_datetime, update=0, context=None):
+    if update == 0:
         get = f'Day {current_datetime.day}', str(current_datetime.hour) + ':' + str(
             current_datetime.minute) + ':' + str(current_datetime.second)
     else:
@@ -42,6 +50,20 @@ def write_to_log(update, log, context=None):
     # for arg in context.args:
     #    result += arg + ' '
     wall.write(str(update.message.from_user['username']) + ": " + log + '\n')
+    wall.close()
+
+def write_to_logb(update, log, context=None):
+    wall = open('log.txt', 'a')
+    # for arg in context.args:
+    #    result += arg + ' '
+    wall.write(log + '\n')
+    wall.close()
+
+def write_rewiev(update, log, context=None):
+    wall = open('rw.txt', 'a')
+    # for arg in context.args:
+    #    result += arg + ' '
+    wall.write(log + '\n')
     wall.close()
 
 
@@ -67,7 +89,7 @@ class Memes:
 
     def start(update, context):
         current_datetime = datetime.now()
-        update.message.reply_text('Добро пожаловать в генератор ботов! Отправьте фото, чтобы начать с ним работать!')
+        context.bot.send_message(update.effective_chat.id, 'Добро пожаловать в генератор мемов! Отправьте фото, чтобы начать с ним работать!')
         print('Meme! ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
         write_to_log(update, 'Meme!' + loggerprintAZ(current_datetime, update, context), context)
         return 0
@@ -137,18 +159,22 @@ storys = [
     '''Слово опера по-армянски звучит так же, как и во многих других языках – опера.\nОднако многие ереванцы думают, что это армянское слово и оно требует перевода.  \nУбедился в этом, наблюдая сцену в маршрутке.\nВодитель на вопросы пассажиров о конечной всем отвечает:\n— Опера.\nНа остановке в боковое окно просовывается симпатичное славянское личико и по-русски интересуется тем же.\nВодила после небольшой паузы выдает, как ему кажется, на русском:\n— Опер!''',
     '''Отрицательной чертой, приписываемой туристам, был вандализм. Сведения о разграблении памятников туристами неоднократно отмечались современниками. Известный адвокат А.Ф.Кони, описывая Дворец правосудия в Париже, вспоминал:\n"В этой комнате устроена в настоящее время скромная часовня, стены которой пришлось выкрасить темной масляной краской, во избежание тех надписей, которыми туристы хотят связать свои ничтожные имена с местами, где разыгрывались исторические события. Пришлось унести из этой комнаты и кресло королевы, чтобы спасти его остатки от тех же туристов, бессмысленно вырезавших из него кусочки себе на память".''',
     '''Было вчера.\nСижу дома, никого не трогаю, починяю примус.\nЗаваливает младшенький , и с порога старшему: "А ты не знаешь, кто Марка убил"?\nЯ знаю, что у старшего был одноклассник Марк, думаю, что вообще гопота местная берега попутала.\nМаму этого Марка знаю, речь уже скорбную сложил, чтобы позвонить ей, посочувствовать.\nСука, как меня только дёрнуло подробности спросить...\nОт жеж жопа была бы. Оказалось, что тот сраный Марк - это персонаж онлайн игры.\nНу как так-то, а?''']
-comands = '''/start
-          /info
-          /roll 
-          /anikdot 
-          /story 
-          /animal 
-          /joke 
-          /translate 
-          /set_timer 
-          /count 
-          /meme 
-          /commands'''
+comands = '''
+/start - - Старт!
+/info - - Инфа
+/roll - - Бросок игральной кости
+/anekdot - - Расскажу анекдот
+/story - - Расскажу историю
+/animal - - Рандомный зверь
+/commands - - Все команды.
+/joke - - Шутка!
+/translate - (слово) - перевод
+/set_timer - (секунды) - таймер
+/count - (текст с пробелами!) - счётчик слов
+/meme - - Создай мем!
+/cancel - - Отменить.
+/review - - Отзыв!
+/wiki - (что искать?) - поиск в Вики'''
 jokes = [
     'О ПАССАЖИРАХ С НИЗКИМ РЕЙТИНГОМ\nЦитата: «Идея неплохая. К людям с хорошим рейтингом приезжают водители с хорошим рейтингом. Согласитесь, в эту сторону идея работает. Она абсолютно не работает в обратную сторону. Получается, к людям с плохим рейтингом приезжают водители с плохим рейтингом. То есть прямо сейчас где-то по Санкт-Петербургу ублюдок едет за ублюдком. Они оба очень злые, потому что у них в телефонах написано, что они ублюдки. И „Яндекс“ думает, что из этого получится что-то хорошее».',
     'О СПАЛЬНЫХ РАЙОНАХ И ГОТИКЕ\nЦитата: «Кто живёт в некрасивых домах? Похлопайте, пожалуйста. Просто я недавно задумался, что если положить фотографии всех мест, где я провёл большую часть своей жизни… Фотографию моего дома, фотографию школы, института. Если вот так в ряд положить, это очень похоже на тот момент в фильме, знаете, когда детектив понимает, почему герой стал серийным убийцей: „А, оказывается, у тебя не было выбора! Ты должен был стать серийным убийцей, больше никем ты не мог стать!“\nМне нравится готика, готические соборы. И я недавно узнал одно из главных правил построения готики: рядом с готическим собором ты должен чувствовать себя ничтожеством. Потому что готический собор настолько возвышенный и прекрасный. И я подумал, что с моим домом это тоже работает. Я тоже чувствую себя ничтожеством, но только потому, что это мой дом».',
@@ -187,6 +213,12 @@ def button(update, context):
         infob(update, context)
     elif query.data == '3_1':
         cmdb(update, context)
+    elif query.data == 'RW_Y':
+        rwY(update, context)
+    elif query.data == 'RW_N':
+        rwN(update, context)
+    elif query.data == 'RW_GET':
+        quiz(update, context)
     else:
         context.bot.send_message(update.effective_chat.id, "Пока что этого нет!!")
 
@@ -226,12 +258,15 @@ def startb(update, context):  # старт
     context.bot.send_message(update.effective_chat.id, list_greeting[
         random.randint(0, len(list_greeting) - 1)] + " Меня зовут " + name + "! Команды /commands",
                              reply_markup=InlineKeyboardMarkup(keyboard2))
+    write_to_logb(f"start ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def infob(update, context):  # инфа
     current_datetime = datetime.now()
     context.bot.send_message(update.effective_chat.id, f"Меня зовут {name}! Меня создал AlexZapl!",
                              reply_markup=InlineKeyboardMarkup(keyboard2))
+    write_to_logb(
+        f"info ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def message(update, context):  # ответ
@@ -298,18 +333,24 @@ def rollb(update, context):  # игральная кость
     time.sleep(0.5)
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'Выпало число {random.randint(1, 6)}!',
                              reply_markup=InlineKeyboardMarkup(keyboard))
+    write_to_logb(
+        f"roll ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def anikdotb(update, context):  # аникдот
     current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{anikdots[random.randint(0, len(anikdots) - 1)]}',
                              reply_markup=InlineKeyboardMarkup(keyboard))
+    write_to_logb(
+        f"anekdot ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def storyb(update, context):  # история
     current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{storys[random.randint(0, len(storys) - 1)]}',
                              reply_markup=InlineKeyboardMarkup(keyboard))
+    write_to_logb(
+        f"story ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def cmd(update, context):  # команды
@@ -328,6 +369,8 @@ def cmdb(update, context):  # команды
                              reply_markup=InlineKeyboardMarkup(keyboard))
     context.bot.send_message(chat_id=update.effective_chat.id, text='Штучки!:',
                              reply_markup=InlineKeyboardMarkup(keyboard2))
+    write_to_logb(
+        f"commands ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def animal(update, context):  # текст-вопросы
@@ -342,33 +385,35 @@ def animal(update, context):  # текст-вопросы
     else:
         animls = int(animls)
 
-    print(f'animals {animls}', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
+    print(f'animals {animls}', update.effective_chat.id, loggerprintAZ(current_datetime, update, context), 'Старт')
     write_to_log(update, f'animals {animls}' + loggerprintAZ(current_datetime, update, context), context)
-    for i in range(0, animls):
+    for i in range(1, animls+1):
         rand = random.randint(1, 7)
         if rand == 1:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это кот/кошка!')
             https2 = str(SRA.Img.cat())
         elif rand == 2:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это собака!')
             https2 = str(SRA.Img.dog())
         elif rand == 3:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это панда!')
             https2 = str(SRA.Img.panda())
         elif rand == 4:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это красная панда!')
             https2 = str(SRA.Img.red_panda())
         elif rand == 5:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это птичка!')
             https2 = str(SRA.Img.birb())
         elif rand == 6:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это лиса!')
             https2 = str(SRA.Img.fox())
         elif rand == 7:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это коала!')
             https2 = str(SRA.Img.koala())
         https3 = https2[10:]
         https = https3[:-2]
+        print(f'animals {animls}', update.effective_chat.id, loggerprintAZ(current_datetime, update, context),
+              f'\n{i}/{animls} : {https}')
         bot.send_photo(update.effective_chat.id, https)
     if animls == 1:
         context.bot.send_message(chat_id=update.effective_chat.id,
@@ -381,31 +426,32 @@ def animalb(update, context):  # текст-вопросы
 
     animls = 1
 
-    for i in range(0, animls):
+    for i in range(1, animls + 1):
         rand = random.randint(1, 7)
         if rand == 1:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это кот/кошка!')
             https2 = str(SRA.Img.cat())
         elif rand == 2:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это собака!')
             https2 = str(SRA.Img.dog())
         elif rand == 3:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это панда!')
             https2 = str(SRA.Img.panda())
         elif rand == 4:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это красная панда!')
             https2 = str(SRA.Img.red_panda())
         elif rand == 5:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это птичка!')
             https2 = str(SRA.Img.birb())
         elif rand == 6:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это лиса!')
             https2 = str(SRA.Img.fox())
         elif rand == 7:
-            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка')
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это коала!')
             https2 = str(SRA.Img.koala())
         https3 = https2[10:]
         https = https3[:-2]
+        print(f"animal ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}') \n{i}/{animls} : {https}")
         bot.send_photo(update.effective_chat.id, https, reply_markup=InlineKeyboardMarkup(keyboard))
 
 
@@ -421,6 +467,8 @@ def jokeb(update, context):  # команды
     current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{jokes[random.randint(0, len(jokes) - 1)]}',
                              reply_markup=InlineKeyboardMarkup(keyboard))
+    write_to_logb(
+        f"joke ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def alarm(context):
@@ -458,6 +506,46 @@ def counter(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=f"Тут {lenned} слова!")
     write_to_log(update, f'len' + loggerprintAZ(current_datetime, update, context) + f'Text: {text}', context)
 
+
+def quiz(update, context):
+    context.bot.send_message(update.effective_chat.id, 'Понравился бот?', reply_markup=InlineKeyboardMarkup(rwkb))
+
+def rwY(update, context):
+    current_datetime = datetime.now()
+    context.bot.send_message(update.effective_chat.id, 'Спасибо!')
+    write_rewiev(update, f'(Day {current_datetime.day} {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}) Text: Yes', context)
+
+
+def rwN(update, context):
+    current_datetime = datetime.now()
+    context.bot.send_message(update.effective_chat.id, 'Жаль :(')
+    write_rewiev(update, f'(Day {current_datetime.day} {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}) Text: No', context)
+
+def wiki(update, context):
+    current_datetime = datetime.now()
+    if context.args[0] == "" or context.args[0] == None:
+        print('Нельзя отправить ничего!')
+    else:
+        #проверим выводом в консоль, что мы получаем запросом, потом можно закомментировать или удалить
+        print('wiki ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context), f"Args: {context.args[0]}")
+        write_to_log(update, 'wiki' + loggerprintAZ(current_datetime, update, context) + f"Args: {context.args[0]}", context)
+
+        path = fr"C:\Users\alexz\PycharmProjects\Kodland M2Y1\M1Y1\Bot\wiki\{context.args[0]}_find_result.txt"
+
+        #получить резюме страницы найденной по запросу
+        in_file = wikipedia.summary(context.args[0])
+        #открываем файл для записи найденного результата
+        file_wiki = open(path, 'w', encoding="utf-8")
+        file_wiki.write(f'{context.args[0]}\n=====================\n{in_file}')
+        file_wiki.close()
+        #получаем первое предложение до точки в найденном материале для вывода в чат
+        in_chat = in_file.split(".")[0]
+        context.bot.send_message(update.effective_chat.id, in_chat)
+        #считываем файл в двоичном формате для отправки полного результат поиска в час в виде файла
+        sending_file = open(path, 'rb')
+        #отправка файла
+        context.bot.send_document(update.effective_chat.id, sending_file)
+        sending_file.close()
 
 def unknown(update, context):  # нет команды
     current_datetime = datetime.now()
@@ -503,6 +591,12 @@ conv_handler = ConversationHandler(
     }, fallbacks=[Memes.cancel_handler])
 
 dispatcher.add_handler(conv_handler)
+
+quiz_handler = CommandHandler('review', quiz)
+dispatcher.add_handler(quiz_handler)
+
+wiki_handler = CommandHandler('wiki', wiki)  # wiki
+dispatcher.add_handler(wiki_handler)  # wiki
 
 dispatcher.add_handler(unknown_handler)  # нет команды
 

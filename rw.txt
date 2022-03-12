@@ -1,0 +1,17 @@
+(Day 9 10:33:41) Text: Yes
+(Day 9 17:2:51) Text: Yes
+(Day 9 17:2:52) Text: No
+(Day 9 17:2:53) Text: No
+(Day 9 17:2:53) Text: No
+(Day 9 17:2:54) Text: Yes
+(Day 9 17:2:55) Text: No
+(Day 9 17:2:55) Text: No
+(Day 9 17:2:59) Text: No
+(Day 9 17:2:59) Text: No
+(Day 9 17:2:59) Text: No
+(Day 9 17:3:0) Text: Yes
+(Day 10 16:1:38) Text: Yes
+(Day 10 16:2:51) Text: Yes
+(Day 12 15:39:25) Text: Yes
+(Day 12 16:13:30) Text: Yes
+(Day 12 16:13:31) Text: No
