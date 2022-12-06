@@ -22,7 +22,6 @@ keyboard = [
      InlineKeyboardButton("История", callback_data='3')],
     [InlineKeyboardButton("Игральная кость", callback_data='4')],
     [InlineKeyboardButton("Животное", callback_data='5')],
-    [InlineKeyboardButton("Создать мем!", callback_data='6')],
     [InlineKeyboardButton("Оцени бота!", callback_data='RW_GET')]]
 keyboard2 = [
     [InlineKeyboardButton("Старт!", callback_data='1_1'), InlineKeyboardButton("Инфа.", callback_data='2_1')],
@@ -45,19 +44,21 @@ def loggerprintAZ(current_datetime, update=0, context=None):
     return str(get)
 
 
-def write_to_log(update, log, context=None):
+def write_to_log(update, log=None, context=None):
     wall = open('log.txt', 'a')
     # for arg in context.args:
     #    result += arg + ' '
-    wall.write(str(update.message.from_user['username']) + ": " + log + '\n')
+    wall.write(str(update.message.from_user['username']) + ": " + str(log) + '\n')
     wall.close()
 
-def write_to_logb(update, log, context=None):
+
+def write_to_logb(update, log=None, context=None):
     wall = open('log.txt', 'a')
     # for arg in context.args:
     #    result += arg + ' '
-    wall.write(log + '\n')
+    wall.write(str(log) + '\n')
     wall.close()
+
 
 def write_rewiev(update, log, context=None):
     wall = open('rw.txt', 'a')
@@ -65,76 +66,6 @@ def write_rewiev(update, log, context=None):
     #    result += arg + ' '
     wall.write(log + '\n')
     wall.close()
-
-
-class Memes:
-    def set_meme_text(username, ts, bs):
-        img = Image.open(fr"C:\Users\alexz\PycharmProjects\Kodland M2Y1\M1Y1\Bot\Meme\{username}_photo.jpg")
-        rgb_img = img.convert("RGB")
-        title_font = ImageFont.truetype('arial.ttf', 25)
-        width, height = rgb_img.size
-        meme = ImageDraw.Draw(rgb_img)
-        meme.text(((width / 2 - width / 4), height / 4), ts, (0, 0, 0), font=title_font)
-        meme.text(((width / 2 - width / 2.5), height - height / 4), bs, (0, 0, 0), font=title_font)
-        rgb_img.save(fr"C:\Users\alexz\PycharmProjects\Kodland M2Y1\M1Y1\Bot\Meme\{username}_meme.jpg")
-
-    PHOTO = 0
-    TOP_STRING = 1
-    BOT_STRING = 2
-    VIDEO = 3
-
-    bot = Bot(token=bot_token)
-    updater = Updater(token=bot_token)
-    dispatcher = updater.dispatcher
-
-    def start(update, context):
-        current_datetime = datetime.now()
-        context.bot.send_message(update.effective_chat.id, 'Добро пожаловать в генератор мемов! Отправьте фото, чтобы начать с ним работать!')
-        print('Meme! ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context))
-        write_to_log(update, 'Meme!' + loggerprintAZ(current_datetime, update, context), context)
-        return 0
-
-    def photo(update, context):
-        user = str(update.effective_chat.id) + str(update.message.from_user['username'])
-        photo_file = update.message.document.get_file()
-        photo_file.download(fr"C:\Users\alexz\PycharmProjects\Kodland M2Y1\M1Y1\Bot\Meme\{user}_photo.jpg")
-        update.message.reply_text(
-            'Отлично! Теперь добавь верхнюю надпись или отправь /skip если хочешь пропустить этот шаг')
-        return 1
-
-    def top_string(update, context):
-        global top_s
-        update.message.reply_text('Смешно =) А теперь вводи нижнюю надпись.')
-        top_s = update.message.text
-        return 2
-
-    def skip_top_string(update, context):
-        global top_s
-        update.message.reply_text('Тогда пиши что должно быть внизу.')
-        top_s = ""
-        return 2
-
-    def bottom_string(update, context):
-        user = str(update.effective_chat.id) + str(update.message.from_user['username'])
-        update.message.reply_text('Лови результат')
-        bot_s = update.message.text
-        Memes.set_meme_text(user, top_s, bot_s)
-        sending_img = open(fr"C:\Users\alexz\PycharmProjects\Kodland M2Y1\M1Y1\Bot\Meme\{user}_meme.jpg", "rb")
-        context.bot.send_document(update.effective_chat.id, sending_img,
-                                  reply_markup=InlineKeyboardMarkup(keyboard))
-        return ConversationHandler.END
-
-    def cancel(update, context):
-        update.message.reply_text('Жаль! Пиши снова, если захочешь повторить!',
-                                  reply_markup=InlineKeyboardMarkup(keyboard))
-        return ConversationHandler.END
-
-    photo_handler = MessageHandler(Filters.document.category("image"), photo)
-    top_string_handler = MessageHandler(Filters.text & ~Filters.command, top_string)
-    skip_top_string_handler = CommandHandler('skip', skip_top_string)
-    bottom_string_handler = MessageHandler(Filters.text & ~Filters.command, bottom_string)
-    cancel_handler = CommandHandler('cancel', cancel)
-
 
 anikdots = [
     'Маньяк опрыскал деньги ядом и пожертвовал их детскому дому. Погибло двадцать депутатов, два мэра и один министр. Дети не пострадали.',
@@ -171,7 +102,6 @@ comands = '''
 /translate - (слово) - перевод
 /set_timer - (секунды) - таймер
 /count - (текст с пробелами!) - счётчик слов
-/meme - - Создай мем!
 /cancel - - Отменить.
 /review - - Отзыв!
 /wiki - (что искать?) - поиск в Вики'''
@@ -205,8 +135,6 @@ def button(update, context):
         rollb(update, context)
     elif query.data == "5":
         animalb(update, context)
-    elif query.data == "6":
-        Memes.start(update, context)
     elif query.data == '1_1':
         startb(update, context)
     elif query.data == '2_1':
@@ -265,8 +193,7 @@ def infob(update, context):  # инфа
     current_datetime = datetime.now()
     context.bot.send_message(update.effective_chat.id, f"Меня зовут {name}! Меня создал AlexZapl!",
                              reply_markup=InlineKeyboardMarkup(keyboard2))
-    write_to_logb(
-        f"info ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
+    write_to_logb(f"info ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def message(update, context):  # ответ
@@ -333,24 +260,21 @@ def rollb(update, context):  # игральная кость
     time.sleep(0.5)
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'Выпало число {random.randint(1, 6)}!',
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    write_to_logb(
-        f"roll ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
+    write_to_logb(f"roll ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def anikdotb(update, context):  # аникдот
     current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{anikdots[random.randint(0, len(anikdots) - 1)]}',
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    write_to_logb(
-        f"anekdot ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
+    write_to_logb(f"anekdot ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def storyb(update, context):  # история
     current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{storys[random.randint(0, len(storys) - 1)]}',
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    write_to_logb(
-        f"story ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
+    write_to_logb(f"story ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def cmd(update, context):  # команды
@@ -369,8 +293,7 @@ def cmdb(update, context):  # команды
                              reply_markup=InlineKeyboardMarkup(keyboard))
     context.bot.send_message(chat_id=update.effective_chat.id, text='Штучки!:',
                              reply_markup=InlineKeyboardMarkup(keyboard2))
-    write_to_logb(
-        f"commands ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
+    write_to_logb(f"commands ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def animal(update, context):  # текст-вопросы
@@ -387,7 +310,7 @@ def animal(update, context):  # текст-вопросы
 
     print(f'animals {animls}', update.effective_chat.id, loggerprintAZ(current_datetime, update, context), 'Старт')
     write_to_log(update, f'animals {animls}' + loggerprintAZ(current_datetime, update, context), context)
-    for i in range(1, animls+1):
+    for i in range(1, animls + 1):
         rand = random.randint(1, 7)
         if rand == 1:
             context.bot.send_message(chat_id=update.effective_chat.id, text='Милашка, это кот/кошка!')
@@ -451,7 +374,9 @@ def animalb(update, context):  # текст-вопросы
             https2 = str(SRA.Img.koala())
         https3 = https2[10:]
         https = https3[:-2]
-        print(f"animal ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}') \n{i}/{animls} : {https}")
+        print(
+            f"animal ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}') \n{i}/{animls} : {https}")
+        write_to_logb(f"animal ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}') \n{i}/{animls} : {https}")
         bot.send_photo(update.effective_chat.id, https, reply_markup=InlineKeyboardMarkup(keyboard))
 
 
@@ -467,8 +392,7 @@ def jokeb(update, context):  # команды
     current_datetime = datetime.now()
     context.bot.send_message(chat_id=update.effective_chat.id, text=f'{jokes[random.randint(0, len(jokes) - 1)]}',
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    write_to_logb(
-        f"joke ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
+    write_to_logb(f"joke ('?', 'Day {current_datetime.day}', {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}')")
 
 
 def alarm(context):
@@ -510,42 +434,74 @@ def counter(update, context):
 def quiz(update, context):
     context.bot.send_message(update.effective_chat.id, 'Понравился бот?', reply_markup=InlineKeyboardMarkup(rwkb))
 
+
 def rwY(update, context):
     current_datetime = datetime.now()
     context.bot.send_message(update.effective_chat.id, 'Спасибо!')
-    write_rewiev(update, f'(Day {current_datetime.day} {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}) Text: Yes', context)
+    write_rewiev(update,
+                 f'(Day {current_datetime.day} {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}) Text: Yes',
+                 context)
 
 
 def rwN(update, context):
     current_datetime = datetime.now()
     context.bot.send_message(update.effective_chat.id, 'Жаль :(')
-    write_rewiev(update, f'(Day {current_datetime.day} {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}) Text: No', context)
+    write_rewiev(update,
+                 f'(Day {current_datetime.day} {current_datetime.hour}:{current_datetime.minute}:{current_datetime.second}) Text: No',
+                 context)
+
 
 def wiki(update, context):
     current_datetime = datetime.now()
     if context.args[0] == "" or context.args[0] == None:
         print('Нельзя отправить ничего!')
     else:
-        #проверим выводом в консоль, что мы получаем запросом, потом можно закомментировать или удалить
-        print('wiki ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context), f"Args: {context.args[0]}")
-        write_to_log(update, 'wiki' + loggerprintAZ(current_datetime, update, context) + f"Args: {context.args[0]}", context)
+        wikipedia.set_lang("ru")
+        context.bot.send_message(update.effective_chat.id, "Русский язык:")
+        for i in range(0, 1):
+            # проверим выводом в консоль, что мы получаем запросом, потом можно закомментировать или удалить
+            print('wiki ', update.effective_chat.id, loggerprintAZ(current_datetime, update, context),
+                  f"Args: {context.args[0]}")
+            write_to_log(update, 'wiki' + loggerprintAZ(current_datetime, update, context) + f"Args: {context.args[0]}",
+                         context)
 
-        path = fr"C:\Users\alexz\PycharmProjects\Kodland M2Y1\M1Y1\Bot\wiki\{context.args[0]}_find_result.txt"
+            path = fr"C:\Users\alexz\PycharmProjects\Kodland M2Y1\M1Y1\Bot\wiki\RU\{context.args[0]}_find_result.txt"
 
-        #получить резюме страницы найденной по запросу
-        in_file = wikipedia.summary(context.args[0])
-        #открываем файл для записи найденного результата
-        file_wiki = open(path, 'w', encoding="utf-8")
-        file_wiki.write(f'{context.args[0]}\n=====================\n{in_file}')
-        file_wiki.close()
-        #получаем первое предложение до точки в найденном материале для вывода в чат
-        in_chat = in_file.split(".")[0]
-        context.bot.send_message(update.effective_chat.id, in_chat)
-        #считываем файл в двоичном формате для отправки полного результат поиска в час в виде файла
-        sending_file = open(path, 'rb')
-        #отправка файла
-        context.bot.send_document(update.effective_chat.id, sending_file)
-        sending_file.close()
+            # получить резюме страницы найденной по запросу
+            in_file = wikipedia.summary(context.args[0])
+            # открываем файл для записи найденного результата
+            file_wiki = open(path, 'w', encoding="utf-8")
+            file_wiki.write(f'{context.args[0]}\n=====================\n{in_file}')
+            file_wiki.close()
+            # получаем первое предложение до точки в найденном материале для вывода в чат
+            in_chat = in_file.split(".")[0]
+            context.bot.send_message(update.effective_chat.id, in_chat)
+            # считываем файл в двоичном формате для отправки полного результат поиска в час в виде файла
+            sending_file = open(path, 'rb')
+            # отправка файла
+            context.bot.send_document(update.effective_chat.id, sending_file)
+            sending_file.close()
+
+        wikipedia.set_lang("en")
+        context.bot.send_message(update.effective_chat.id, "Англиский язык:")
+        for i in range(0, 1):
+            path = fr"C:\Users\alexz\PycharmProjects\Kodland M2Y1\M1Y1\Bot\wiki\EN\{context.args[0]}_find_result.txt"
+
+            # получить резюме страницы найденной по запросу
+            in_file = wikipedia.summary(context.args[0])
+            # открываем файл для записи найденного результата
+            file_wiki = open(path, 'w', encoding="utf-8")
+            file_wiki.write(f'{context.args[0]}\n=====================\n{in_file}')
+            file_wiki.close()
+            # получаем первое предложение до точки в найденном материале для вывода в чат
+            in_chat = in_file.split(".")[0]
+            context.bot.send_message(update.effective_chat.id, in_chat)
+            # считываем файл в двоичном формате для отправки полного результат поиска в час в виде файла
+            sending_file = open(path, 'rb')
+            # отправка файла
+            context.bot.send_document(update.effective_chat.id, sending_file)
+            sending_file.close()
+
 
 def unknown(update, context):  # нет команды
     current_datetime = datetime.now()
@@ -579,18 +535,6 @@ dispatcher.add_handler(story_handler)  # история
 dispatcher.add_handler(cmd_handler)  # команды
 dispatcher.add_handler(fox_handler)  # текст-вопросы
 dispatcher.add_handler(joke_handler)  # шутка
-
-meme_start_handler = CommandHandler('meme', Memes.start)
-
-conv_handler = ConversationHandler(
-    entry_points=[meme_start_handler],
-    states={
-        Memes.PHOTO: [Memes.photo_handler],
-        Memes.TOP_STRING: [Memes.top_string_handler, Memes.skip_top_string_handler],
-        Memes.BOT_STRING: [Memes.bottom_string_handler],
-    }, fallbacks=[Memes.cancel_handler])
-
-dispatcher.add_handler(conv_handler)
 
 quiz_handler = CommandHandler('review', quiz)
 dispatcher.add_handler(quiz_handler)

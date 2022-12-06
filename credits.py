@@ -1,5 +1,9 @@
 bot_token = "1895553984:AAG8IROpLKQrUZJPiFoj_Q_4k-UsC9JT-dI"
 from speedtest import Speedtest
+from rich import print
+from rich.console import Console
+from speedtest import Speedtest
+
 
 class test():
     def network(f=None):
